@@ -1,0 +1,10 @@
+# Settings to manage and configure a Firebase App Hosting backend.
+# https://firebase.google.com/docs/app-hosting/configure
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  maxInstances: 2
+  minInstances: 0
+  concurrency: 80
+iam:
+  serviceAccount: managed-by-app-hosting

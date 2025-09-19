@@ -1,0 +1,99 @@
+# Estrutura de Dados do Sistema ScaleMaster
+
+Este documento detalha as principais estruturas de dados (tipos) utilizadas no sistema, seus nomes técnicos e os campos (propriedades) que cada uma contém. Use esta referência para entender como os dados são organizados internamente.
+
+---
+
+### 1. Voluntários
+
+- **O que é:** Representa um único voluntário no sistema.
+- **Nome do Tipo Técnico:** `Volunteer`
+- **Arquivo de Dados:** `src/lib/data.ts` (array `volunteers`)
+- **Campos:**
+  - `id`: (string) Identificador único do voluntário.
+  - `name`: (string) Nome completo do voluntário.
+  - `team`: (string) Nome da equipe à qual o voluntário pertence (ex: "Alpha", "N/A").
+  - `areas`: (array de strings) Lista de nomes das áreas de serviço em que o voluntário atua (ex: `["Som", "Projeção"]`).
+  - `availability`: (array de strings) Lista de nomes dos eventos para os quais o voluntário está disponível (ex: `["Culto da Família"]`).
+  - `phone`: (string, opcional) Número de telefone.
+  - `email`: (string, opcional) Endereço de e-mail.
+
+---
+
+### 2. Eventos
+
+- **O que é:** Representa um evento que requer voluntários, podendo ser fixo ou pontual.
+- **Nome do Tipo Técnico:** `Event`
+- **Arquivo de Dados:** `src/lib/data.ts` (array `events`)
+- **Campos:**
+  - `id`: (string) Identificador único do evento.
+  - `name`: (string) Nome do evento (ex: "Culto de Propósitos").
+  - `frequency`: (string) Frequência do evento. Pode ser "Semanal" ou "Pontual".
+  - `dayOfWeek`: (string, opcional) Dia da semana para eventos semanais (ex: "Quinta-feira").
+  - `date`: (string, opcional) Data no formato "YYYY-MM-DD" para eventos pontuais.
+  - `time`: (string) Horário do evento no formato "HH:MM".
+  - `areas`: (array de objetos) Lista das áreas necessárias para o evento. Cada objeto tem a seguinte forma:
+    - `name`: (string) Nome da área de serviço necessária.
+    - `volunteersNeeded`: (number) Quantidade de voluntários necessários para essa área.
+  - `responsible`: (string, opcional) Nome do responsável pelo evento.
+
+---
+
+### 3. Áreas de Serviço
+
+- **O que é:** Representa uma área de atuação para os voluntários (ex: Som, Projeção).
+- **Nome do Tipo Técnico:** `AreaOfService`
+- **Arquivo de Dados:** `src/lib/data.ts` (array `areasOfService`)
+- **Campos:**
+  - `name`: (string) Nome da área.
+  - `leader`: (string, opcional) Nome do líder da área.
+  - `leaderPhone`: (string, opcional) Contato do líder.
+
+---
+
+### 4. Equipes
+
+- **O que é:** Representa uma equipe de rodízio (ex: Alpha, Bravo).
+- **Nome do Tipo Técnico:** `Team`
+- **Arquivo de Dados:** `src/lib/data.ts` (array `teams`)
+- **Campos:**
+  - `name`: (string) Nome da equipe.
+
+---
+
+### 5. Escalas de Equipes (Rotação)
+
+- **O que é:** Define a semana de trabalho de cada equipe.
+- **Nome do Tipo Técnico:** `TeamSchedule`
+- **Arquivo de Dados:** `src/lib/data.ts` (array `teamSchedules`)
+- **Campos:**
+  - `team`: (string) Nome da equipe.
+  - `startDate`: (string) Data de início da semana da equipe no formato "YYYY-MM-DD".
+  - `endDate`: (string) Data de fim da semana da equipe no formato "YYYY-MM-DD".
+
+---
+
+### 6. Escala Gerada e Salva
+
+- **O que é:** O resultado da geração de escala pela IA, que é salvo.
+- **Nome do Tipo Técnico Principal:** `SavedSchedule`
+- **Arquivo de Dados:** `src/lib/data.ts` (array `savedSchedules`)
+- **Estrutura de `SavedSchedule`:**
+  - `id`: (string) ID único da escala salva.
+  - `title`: (string) Título descritivo (ex: "Escala para agosto de 2024").
+  - `createdAt`: (string) Data e hora do salvamento em formato ISO.
+  - `year`: (number) Ano da escala.
+  - `month`: (number) Mês da escala.
+  - `data`: (objeto `GenerateScheduleOutput`) O objeto completo retornado pela IA.
+    - `scheduleData`: (array de `ScheduleDaySchema`) A lista de dias com suas alocações.
+      - Cada objeto `ScheduleDaySchema` tem:
+        - `date`: (string) A data "YYYY-MM-DD".
+        - `dayOfWeek`: (string) O dia da semana.
+        - `assignments`: (array de `ScheduleItem`) Lista de alocações para o dia.
+          - Cada objeto `ScheduleItem` tem:
+            - `evento`: (string) Nome do evento.
+            - `area`: (string) Nome da área.
+            - `equipe`: (string) Nome da equipe escalada.
+            - `voluntario_alocado`: (string | null) Nome do voluntário ou nulo se falhou.
+            - `status`: (string) "Preenchida" ou "Falha".
+            - `motivo`: (string | null) Motivo da falha.

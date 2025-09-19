@@ -1,0 +1,45 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to get the user's permission document.
+    function getUserPermissions(userId) {
+      return get(/databases/$(database)/documents/userPermissions/$(userId)).data;
+    }
+
+    // USER PERMISSIONS collection
+    match /userPermissions/{userId} {
+      // ANY authenticated user can read their OWN permission document.
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // ANY authenticated user can see the list of all users, needed for the settings page.
+      allow list: if request.auth != null;
+
+      // ONLY users with canManageSettings can update/create/delete permissions for ANYONE.
+      allow write: if request.auth != null && getUserPermissions(request.auth.uid).canManageSettings == true;
+    }
+
+    // Base function to check if a user has read access to app data
+    function canReadAppData() {
+      return request.auth != null && getUserPermissions(request.auth.uid).canViewSchedules == true;
+    }
+
+    // Generic rule for all main data collections (volunteers, events, teams, etc.)
+    match /{collection}/{docId} 
+      where collection in ['volunteers', 'events', 'teams', 'areasOfService', 'teamSchedules', 'savedSchedules'] {
+      
+      // Allow read if user has the canViewSchedules permission
+      allow read: if canReadAppData();
+
+      // Allow write based on specific management permissions
+      allow write: if request.auth != null && (
+        (collection == 'volunteers' && getUserPermissions(request.auth.uid).canManageVolunteers == true) ||
+        (collection == 'events' && getUserPermissions(request.auth.uid).canManageEvents == true) ||
+        (collection == 'teams' && getUserPermissions(request.auth.uid).canManageTeams == true) ||
+        (collection == 'areasOfService' && getUserPermissions(request.auth.uid).canManageAreas == true) ||
+        ((collection == 'teamSchedules' || collection == 'savedSchedules') && getUserPermissions(request.auth.uid).canGenerateSchedules == true)
+      );
+    }
+  }
+}

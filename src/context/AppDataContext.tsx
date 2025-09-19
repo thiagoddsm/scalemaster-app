@@ -14,7 +14,7 @@ import { sendTestWhatsApp as sendTestWhatsAppFlow } from '@/ai/flows/send-test-w
 import { notifyVolunteersByEmail as notifyVolunteersByEmailFlow } from '@/ai/flows/send-notification-flow';
 import { notifyVolunteersByWhatsApp as notifyVolunteersByWhatsAppFlow } from '@/ai/flows/send-whatsapp-flow';
 
-// Forcing a git commit by adding this comment.
+// Forcing a git commit by adding this comment to ensure detection.
 interface AppDataContextType {
   volunteers: Volunteer[];
   events: Event[];

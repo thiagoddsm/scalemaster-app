@@ -6,7 +6,7 @@ const firebaseConfig = {
   projectId: "scalemaster-xemva",
   appId: "1:523193415361:web:ea9e980d4638bdf4ec4640",
   storageBucket: "scalemaster-xemva.appspot.com",
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyAzBNn5g5a-5kQvY9p-a3k-bYj7tH8rXcE",
   authDomain: "scalemaster-xemva.firebaseapp.com",
   messagingSenderId: "523193415361",
 };

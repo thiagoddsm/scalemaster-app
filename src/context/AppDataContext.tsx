@@ -14,7 +14,7 @@ import { sendTestWhatsApp as sendTestWhatsAppFlow } from '@/ai/flows/send-test-w
 import { notifyVolunteersByEmail as notifyVolunteersByEmailFlow } from '@/ai/flows/send-notification-flow';
 import { notifyVolunteersByWhatsApp as notifyVolunteersByWhatsAppFlow } from '@/ai/flows/send-whatsapp-flow';
 
-// Forcing a server rebuild by adding this comment.
+// Forcing a git commit by adding this comment.
 interface AppDataContextType {
   volunteers: Volunteer[];
   events: Event[];
@@ -121,11 +121,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setDataLoading(false);
     }
   }, [user, authLoading, currentUserPermissions]);
-  
-  // This effect is a hack to try and force a rebuild on the server.
-  useEffect(() => {
-    console.log("AppDataProvider mounted or updated, forcing a rebuild check.");
-  }, []);
 
   const addVolunteer = async (volunteer: Omit<Volunteer, 'id'>) => { await addDoc(collection(db, 'volunteers'), volunteer); };
   const updateVolunteer = async (id: string, data: Partial<Volunteer>) => { await updateDoc(doc(db, 'volunteers', id), data); };

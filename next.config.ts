@@ -1,6 +1,5 @@
 import type {NextConfig} from 'next';
 
-// Adding a comment here to try to force a full rebuild.
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
@@ -19,7 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Adding this experimental flag to trigger a rebuild.
   experimental: {
     serverComponentsExternalPackages: ['exceljs'],
   },

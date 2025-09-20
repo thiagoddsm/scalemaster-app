@@ -83,9 +83,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    auth.languageCode = 'pt'; // Set language for the popup
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider, {
+        authDomain: 'scalemaster-xemva.firebaseapp.com'
+      });
       await checkAndCreateUserPermissions(result.user);
     } catch (error) {
         const authError = error as AuthError;

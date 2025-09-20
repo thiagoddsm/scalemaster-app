@@ -13,7 +13,6 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-// This new structure is designed to force a cache refresh on the server.
 let app: App;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);

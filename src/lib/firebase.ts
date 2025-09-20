@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp, App } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+// Force config reload
 const firebaseConfig = {
   projectId: "scalemaster-xemva",
   appId: "1:523193415361:web:ea9e980d4638bdf4ec4640",

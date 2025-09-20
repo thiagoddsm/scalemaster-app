@@ -21,16 +21,6 @@ import { Terminal, Send, Loader2, QrCode, Power } from "lucide-react"
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
-// Placeholder for a flow that would handle WhatsApp Web JS
-async function getWhatsAppQrCode(): Promise<{ qr: string } | { error: string }> {
-    // In a real scenario, this would call a Genkit flow
-    // that runs a whatsapp-web.js client and gets the QR code.
-    // For now, we'll simulate it.
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    // This is a fake QR code for demonstration
-    return { qr: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQMAAACXljzdAAAABlBMVEX///8AAABVwtN+AAACiklEQVR42u3aQW7DMAwEwLnA7n/l3AY6W6kRGMlDk/t+VExJ2a5kZ/c+3/2+fx/g4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg/jB43q/d+sl9u92+1f+5V+3X/iJ4WBEP4P8g3u+4q+B3+a9Z85/t+6e8+4aCg4ODg4ODg4OD803w7+v7P2q+z+rO2jA4ODg4ODg4ODg4uGnw6yE4P+s1g4ODg4ODg4ODg4PzWfB28/0/GxwODg4ODg4ODg7OG8E7/CHu/2z5Xg4ODg4ODg4ODg7+k+DNT/yc/sf9xMHg4ODg4ODg4ODg/Br8/o+et+f8rNf9/gTvgYODg4ODg4ODg4PzTfA+g+fsrL7d/53g7ff/b9sZODg4ODg4ODg4ODhvBA/n/d7+fB/w2xmcDg4ODg4ODg4ODs4bwa+f7fvy3R8cnA4ODg4ODg4ODs4/g+fs+S5/d/Z7ODg4ODg4ODg4ODgvBP9+V/53gofz/iS4L3g4ODg4ODg4ODg4/xG8/p/d/bH2+f5Yd2fg4ODg4ODg4ODgvA2+z/v1r/1f24d/PQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODs4nwT/g1+3b/V/B28R/f7Yf3gQODg4ODg4ODg4OLg3+gH+3P9vf3c2Cg4ODg4ODg4OD8xXwfr/b/53g/azv3/Wd8F7g4ODg4ODg4ODgvB38gL/b/S84T/b3d2Pg4ODg4ODg4ODg/BH8gL/b/S94V+3z/b7eBw4ODg4ODg4ODg7OG8Gv2/+b/3bwfD9v3x04ODg4ODg4ODg4/wR/wP9d+3b+d/YDd/chfgscDg4ODg4ODg4OzgvBG1p8/0/wfmY3ODg4ODg4ODg4ODhvBf8L+AD/fhc83/f13sHg4ODg4ODg4ODg/Bv4Ab/f/S/4+S54eP8E7wIHB4f/u+D/+ODg4OA8H3wAf7f/W/b8fvd+Pw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODs4/4C/9K2s+z/b3/AfeAwdn4ODg4OB8HvAA/s+Cz/MGODg4OM/gvfN+dwYODg7O/wD/GziA/0vwiuATODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4/EvwD5Y7Q3w9W9gSAAAAAElFTkSuQmCC' };
-}
-
 export default function KeysPage() {
     const { permissions, loading: authLoading } = useAuth();
     const { secrets, saveSecrets, loading: dataLoading, sendTestEmail, sendTestWhatsApp } = useAppData();
@@ -156,6 +146,16 @@ export default function KeysPage() {
     };
 
     const handleConnectWhatsApp = async () => {
+        // Placeholder for a flow that would handle WhatsApp Web JS
+        async function getWhatsAppQrCode(): Promise<{ qr: string } | { error: string }> {
+            // In a real scenario, this would call a Genkit flow
+            // that runs a whatsapp-web.js client and gets the QR code.
+            // For now, we'll simulate it.
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            // This is a fake QR code for demonstration
+            return { qr: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQMAAACXljzdAAAABlBMVEX///8AAABVwtN+AAACiklEQVR42u3aQW7DMAwEwLnA7n/l3AY6W6kRGMlDk/t+VExJ2a5kZ/c+3/2+fx/g4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg/jB43q/d+sl9u92+1f+5V+3X/iJ4WBEP4P8g3u+4q+B3+a9Z85/t+6e8+4aCg4ODg4ODg4OD803w7+v7P2q+z+rO2jA4ODg4ODg4ODg4uGnw6yE4P+s1g4ODg4ODg4ODg4PzWfB28/0/GxwODg4ODg4ODg7OG8E7/CHu/2z5Xg4ODg4ODg4ODg7+k+DNT/yc/sf9xMHg4ODg4ODg4ODg/Br8/o+et+f8rNf9/gTvgYODg4ODg4ODg4PzTfA+g+fsrL7d/53g7ff/b9sZODg4ODg4ODg4ODhvBA/n/d7+fB/w2xmcDg4ODg4ODg4ODs4bwa+f7fvy3R8cnA4ODg4ODg4ODs4/g+fs+S5/d/Z7ODg4ODg4ODg4ODgvBP9+V/53gofz/iS4L3g4ODg4ODg4ODg4/xG8/p/d/bH2+f5Yd2fg4ODg4ODg4ODgvA2+z/v1r/1f24d/PQ4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODs4nwT/g1+3b/V/B28R/f7Yf3gQODg4ODg4ODg4OLg3+gH+3P9vf3c2Cg4ODg4ODg4OD8xXwfr/b/53g/azv3/Wd8F7g4ODg4ODg4ODgvB38gL/b/S84T/b3d2Pg4ODg4ODg4ODg/BH8gL/b/S94V+3z/b7eBw4ODg4ODg4ODg7OG8Gv2/+b/3bwfD9v3x04ODg4ODg4ODg4/wR/wP9d+3b+d/YDd/chfgscDg4ODg4ODg4OzgvBG1p8/0/wfmY3ODg4ODg4ODg4ODhvBf8L+AD/fhc83/f13sHg4ODg4ODg4ODg/Bv4Ab/f/S/4+S54eP8E7wIHB4f/u+D/+ODg4OA8H3wAf7f/W/b8fvd+Pw4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODs4/4C/9K2s+z/b3/AfeAwdn4ODg4OB8HvAA/s+Cz/MGODg4OM/gvfN+dwYODg7O/wD/GziA/0vwiuATODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4/EvwD5Y7Q3w9W9gSAAAAAElFTkSuQmCC' };
+        }
+        
         setIsQrCodeDialogOpen(true);
         setWaStatus('getting_qr');
         setQrCodeDataUrl('');

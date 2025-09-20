@@ -14,8 +14,6 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-  bypassAuthForAdmin: () => void;
-  isBypass: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,14 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [permissions, setPermissions] = useState<UserPermission | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isBypass, setIsBypass] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
-        setIsBypass(false);
         const userPermRef = doc(db, 'userPermissions', user.uid);
         
         const permsUnsubscribe = onSnapshot(userPermRef, async (snap) => {
@@ -76,13 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => permsUnsubscribe();
 
       } else {
-        // Don't automatically set loading to false if a bypass might be active
-        if (sessionStorage.getItem('adminBypass') !== 'true') {
-            setUser(null);
-            setPermissions(null);
-            setLoading(false);
-            setIsBypass(false);
-        }
+        setUser(null);
+        setPermissions(null);
+        setLoading(false);
       }
     });
 
@@ -105,16 +97,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
         } else if (authError.code !== 'auth/cancelled-popup-request' && authError.code !== 'auth/popup-closed-by-user') {
              console.error("Error signing in with Google: ", error);
+             // We show a more generic error for other issues, including the referer blocked one
+             toast({
+                variant: 'destructive',
+                title: 'Erro de Login',
+                description: `Não foi possível fazer login. Verifique sua conexão ou as configurações do projeto Firebase. (Código: ${authError.code})`,
+             });
         }
     } finally {
-      setLoading(false);
+      // Don't set loading to false here, the onAuthStateChanged listener will handle it
     }
   };
 
   const signOut = async () => {
     try {
-      sessionStorage.removeItem('adminBypass');
-      setIsBypass(false);
       await firebaseSignOut(auth);
       router.push('/login');
     } catch (error) {
@@ -122,39 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const bypassAuthForAdmin = () => {
-    sessionStorage.setItem('adminBypass', 'true');
-    setIsBypass(true);
-    const adminUser = {
-        uid: 'admin_user',
-        displayName: 'Admin (Bypass)',
-        email: 'admin@system.local',
-        photoURL: '',
-    } as User;
-
-    const adminPermissions: UserPermission = {
-        id: 'admin_user',
-        userId: 'admin_user',
-        userDisplayName: 'Admin (Bypass)',
-        userEmail: 'admin@system.local',
-        userPhotoURL: '',
-        ...defaultPermissions
-    };
-
-    setUser(adminUser);
-    setPermissions(adminPermissions);
-    setLoading(false);
-  };
-  
-   useEffect(() => {
-    // Check for bypass on initial load
-    if (sessionStorage.getItem('adminBypass') === 'true') {
-        bypassAuthForAdmin();
-    }
-   }, []);
-
-
-  const value = { user, permissions, loading, signInWithGoogle, signOut, bypassAuthForAdmin, isBypass };
+  const value = { user, permissions, loading, signInWithGoogle, signOut };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

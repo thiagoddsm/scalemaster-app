@@ -1,51 +1,24 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Blocks, Cog, KeyRound } from 'lucide-react';
+import { Blocks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const { signInWithGoogle, user, loading, bypassAuthForAdmin } = useAuth();
+  const { signInWithGoogle, user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
-  const [password, setPassword] = useState('');
-
-
   useEffect(() => {
-    // This effect now also handles the admin bypass state
     if (!loading && user) {
       router.push('/dashboard');
     }
   }, [user, loading, router]);
   
-  const handleAdminLogin = () => {
-    if (password === 'admin123') {
-      bypassAuthForAdmin();
-      toast({
-        title: 'Acesso de Administrador',
-        description: 'Login de emergência bem-sucedido.',
-      });
-      setIsPasswordDialogOpen(false);
-      // The useEffect will handle the redirect
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Senha Incorreta',
-        description: 'A senha de administrador está incorreta.',
-      });
-    }
-    setPassword('');
-  };
-
-
   const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
       <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 9.998C34.793 6.368 29.824 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
@@ -57,12 +30,6 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="absolute top-4 right-4">
-        <Button variant="ghost" size="icon" onClick={() => setIsPasswordDialogOpen(true)}>
-          <Cog className="h-5 w-5 text-muted-foreground" />
-        </Button>
-      </div>
-
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
@@ -90,37 +57,6 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
-
-      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-                <DialogTitle>Acesso de Administrador</DialogTitle>
-                <DialogDescription>
-                    Digite a senha de administrador para login de emergência no ambiente de desenvolvimento.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="flex items-center space-x-2 py-4">
-                <div className="relative flex-grow">
-                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        id="master-password"
-                        type="password"
-                        placeholder="Senha"
-                        className="pl-10"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
-                    />
-                </div>
-            </div>
-            <DialogFooter>
-                <DialogClose asChild>
-                    <Button type="button" variant="secondary">Cancelar</Button>
-                </DialogClose>
-                <Button type="button" onClick={handleAdminLogin}>Entrar</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

@@ -1,12 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut as firebaseSignOut, AuthError } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut as firebaseSignOut, AuthError, getAuth } from 'firebase/auth';
+import { app, db, firebaseConfig } from '@/lib/firebase'; // Import app and firebaseConfig
 import { useRouter } from 'next/navigation';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import type { UserPermission } from '@/lib/types';
 import { toast } from './use-toast';
+
+// Explicitly initialize auth within the hook to ensure correct context
+const auth = getAuth(app);
 
 interface AuthContextType {
   user: User | null;

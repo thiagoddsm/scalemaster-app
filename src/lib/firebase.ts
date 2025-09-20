@@ -1,9 +1,8 @@
 import { initializeApp, getApps, getApp, App } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
-const firebaseConfig = {
+export const firebaseConfig = {
   projectId: "scalemaster-xemva",
   appId: "1:523193415361:web:ea9e980d4638bdf4ec4640",
   storageBucket: "scalemaster-xemva.appspot.com",
@@ -20,7 +19,6 @@ if (getApps().length === 0) {
   app = getApp();
 }
 
-const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { app, auth, db };
+export { app, db };

@@ -14,6 +14,19 @@ import { sendTestWhatsApp as sendTestWhatsAppFlow } from '@/ai/flows/send-test-w
 import { notifyVolunteersByEmail as notifyVolunteersByEmailFlow } from '@/ai/flows/send-notification-flow';
 import { notifyVolunteersByWhatsApp as notifyVolunteersByWhatsAppFlow } from '@/ai/flows/send-whatsapp-flow';
 
+// Mock data for bypass mode
+const mockVolunteers: Volunteer[] = [
+  { id: '1', name: 'Admin Bypass User 1', team: 'Alpha', areas: ['Apoio', 'Som'], availability: ['Culto de Domingo'], email: 'admin1@example.com' },
+  { id: '2', name: 'Admin Bypass User 2', team: 'Bravo', areas: ['Recepção'], availability: ['Culto de Oração'], phone: '123456789' },
+];
+const mockEvents: Event[] = [
+    { id: '1', name: 'Culto de Domingo', frequency: 'Semanal', dayOfWeek: 'Domingo', time: '18:00', areas: [{name: 'Apoio', volunteersNeeded: 2}, {name: 'Som', volunteersNeeded: 1}] },
+    { id: '2', name: 'Culto de Oração', frequency: 'Semanal', dayOfWeek: 'Quarta-feira', time: '20:00', areas: [{name: 'Recepção', volunteersNeeded: 1}] },
+];
+const mockTeams: Team[] = [ {id: '1', name: 'Alpha'}, {id: '2', name: 'Bravo'} ];
+const mockAreas: AreaOfService[] = [ {id: '1', name: 'Apoio'}, {id: '2', name: 'Som'}, {id: '3', name: 'Recepção'} ];
+
+
 interface AppDataContextType {
   volunteers: Volunteer[];
   events: Event[];
@@ -51,7 +64,7 @@ interface AppDataContextType {
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const { user, permissions: currentUserPermissions, loading: authLoading } = useAuth();
+  const { user, permissions: currentUserPermissions, loading: authLoading, isBypass } = useAuth();
   const { toast } = useToast();
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -64,6 +77,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
+    if (isBypass) {
+        setVolunteers(mockVolunteers);
+        setEvents(mockEvents);
+        setTeams(mockTeams);
+        setAreasOfService(mockAreas);
+        setTeamSchedules([]);
+        setSavedSchedules([]);
+        if(currentUserPermissions) setUserPermissions([currentUserPermissions]);
+        setSecrets(null);
+        setDataLoading(false);
+        return;
+    }
+    
     if (user) {
       setDataLoading(true);
       const collectionsToManage = [
@@ -119,23 +145,32 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setSecrets(null);
       setDataLoading(false);
     }
-  }, [user, authLoading, currentUserPermissions]);
+  }, [user, authLoading, currentUserPermissions, isBypass]);
 
-  const addVolunteer = async (volunteer: Omit<Volunteer, 'id'>) => { await addDoc(collection(db, 'volunteers'), volunteer); };
-  const updateVolunteer = async (id: string, data: Partial<Volunteer>) => { await updateDoc(doc(db, 'volunteers', id), data); };
-  const deleteVolunteer = async (id: string) => { await deleteDoc(doc(db, 'volunteers', id)); };
+  const showBypassToast = () => {
+    if (isBypass) {
+        toast({ title: "Modo Bypass", description: "As ações estão desabilitadas neste modo." });
+        return true;
+    }
+    return false;
+  }
 
-  const addEvent = async (event: Omit<Event, 'id'>) => { await addDoc(collection(db, 'events'), event); };
-  const updateEvent = async (id: string, data: Partial<Event>) => { await updateDoc(doc(db, 'events', id), data); };
-  const deleteEvent = async (id: string) => { await deleteDoc(doc(db, 'events', id)); };
+  const addVolunteer = async (volunteer: Omit<Volunteer, 'id'>) => { if(!showBypassToast()) await addDoc(collection(db, 'volunteers'), volunteer); };
+  const updateVolunteer = async (id: string, data: Partial<Volunteer>) => { if(!showBypassToast()) await updateDoc(doc(db, 'volunteers', id), data); };
+  const deleteVolunteer = async (id: string) => { if(!showBypassToast()) await deleteDoc(doc(db, 'volunteers', id)); };
+
+  const addEvent = async (event: Omit<Event, 'id'>) => { if(!showBypassToast()) await addDoc(collection(db, 'events'), event); };
+  const updateEvent = async (id: string, data: Partial<Event>) => { if(!showBypassToast()) await updateDoc(doc(db, 'events', id), data); };
+  const deleteEvent = async (id: string) => { if(!showBypassToast()) await deleteDoc(doc(db, 'events', id)); };
   
-  const addTeam = async (team: Omit<Team, 'id'>) => { await addDoc(collection(db, 'teams'), team); };
-  const updateTeam = async (id: string, data: Partial<Team>) => { await updateDoc(doc(db, 'teams', id), data); };
-  const deleteTeam = async (id: string) => { await deleteDoc(doc(db, 'teams', id)); };
+  const addTeam = async (team: Omit<Team, 'id'>) => { if(!showBypassToast()) await addDoc(collection(db, 'teams'), team); };
+  const updateTeam = async (id: string, data: Partial<Team>) => { if(!showBypassToast()) await updateDoc(doc(db, 'teams', id), data); };
+  const deleteTeam = async (id: string) => { if(!showBypassToast()) await deleteDoc(doc(db, 'teams', id)); };
   
-  const addArea = async (area: Omit<AreaOfService, 'id'>) => { await addDoc(collection(db, 'areasOfService'), area); };
-  const updateArea = async (id: string, data: Partial<AreaOfService>) => { await updateDoc(doc(db, 'areasOfService', id), data); };
+  const addArea = async (area: Omit<AreaOfService, 'id'>) => { if(!showBypassToast()) await addDoc(collection(db, 'areasOfService'), area); };
+  const updateArea = async (id: string, data: Partial<AreaOfService>) => { if(!showBypassToast()) await updateDoc(doc(db, 'areasOfService', id), data); };
   const deleteArea = async (id: string) => {
+    if (showBypassToast()) return;
     const areaRef = doc(db, 'areasOfService', id);
     const areaSnap = await getDoc(areaRef);
     const areaName = areaSnap.data()?.name;
@@ -156,11 +191,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
   
   const saveSecrets = async (secrets: Secrets) => {
+    if (showBypassToast()) return;
     const secretsRef = doc(db, 'secrets', 'credentials');
     await setDoc(secretsRef, secrets, { merge: true });
   };
 
   const generateTeamSchedules = async (year: number, month: number, startTeam: string) => {
+    if (showBypassToast()) return;
     if (teams.length === 0) return;
     const batch = writeBatch(db);
 
@@ -193,6 +230,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
   
   const saveSchedule = async (schedule: Omit<SavedSchedule, 'id'>) => {
+    if (showBypassToast()) return;
     const { year, month, generationArea, data: newData } = schedule;
     
     const q = query(collection(db, 'savedSchedules'), where('year', '==', year), where('month', '==', month));
@@ -249,21 +287,24 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateSavedSchedule = async (id: string, data: Partial<SavedSchedule>) => { await updateDoc(doc(db, 'savedSchedules', id), data); };
-  const deleteSchedule = async (id: string) => { await deleteDoc(doc(db, 'savedSchedules', id)); };
+  const updateSavedSchedule = async (id: string, data: Partial<SavedSchedule>) => { if(!showBypassToast()) await updateDoc(doc(db, 'savedSchedules', id), data); };
+  const deleteSchedule = async (id: string) => { if(!showBypassToast()) await deleteDoc(doc(db, 'savedSchedules', id)); };
   const updateUserPermission = async (userId: string, permissions: Partial<UserPermission>) => {
-    await updateDoc(doc(db, 'userPermissions', userId), permissions);
+    if(!showBypassToast()) await updateDoc(doc(db, 'userPermissions', userId), permissions);
   };
   
   const sendTestEmail = async (req: TestEmailRequest) => {
+    if(showBypassToast()) return { success: false, error: "Ação desabilitada em modo bypass." };
     return await sendTestEmailFlow(req);
   };
 
   const sendTestWhatsApp = async (req: TestWhatsAppRequest) => {
+    if(showBypassToast()) return { success: false, error: "Ação desabilitada em modo bypass." };
     return await sendTestWhatsAppFlow(req);
   };
   
   const notifyVolunteersByEmail = async (schedule: SavedSchedule) => {
+    if(showBypassToast()) return { success: false, error: "Ação desabilitada em modo bypass.", sentCount: 0 };
     return await notifyVolunteersByEmailFlow({
       schedule,
       volunteers,
@@ -277,6 +318,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }
   
   const notifyVolunteersByWhatsApp = async (schedule: SavedSchedule) => {
+    if(showBypassToast()) return { success: false, error: "Ação desabilitada em modo bypass.", sentCount: 0 };
     return await notifyVolunteersByWhatsAppFlow({
       schedule,
       volunteers,

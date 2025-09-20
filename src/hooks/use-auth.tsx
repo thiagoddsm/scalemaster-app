@@ -15,6 +15,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   bypassAuthForAdmin: () => void;
+  isBypass: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,12 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [permissions, setPermissions] = useState<UserPermission | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isBypass, setIsBypass] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
+        setIsBypass(false);
         const userPermRef = doc(db, 'userPermissions', user.uid);
         
         const permsUnsubscribe = onSnapshot(userPermRef, async (snap) => {
@@ -78,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setPermissions(null);
             setLoading(false);
+            setIsBypass(false);
         }
       }
     });
@@ -110,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       sessionStorage.removeItem('adminBypass');
+      setIsBypass(false);
       await firebaseSignOut(auth);
       router.push('/login');
     } catch (error) {
@@ -119,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const bypassAuthForAdmin = () => {
     sessionStorage.setItem('adminBypass', 'true');
+    setIsBypass(true);
     const adminUser = {
         uid: 'admin_user',
         displayName: 'Admin (Bypass)',
@@ -148,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    }, []);
 
 
-  const value = { user, permissions, loading, signInWithGoogle, signOut, bypassAuthForAdmin };
+  const value = { user, permissions, loading, signInWithGoogle, signOut, bypassAuthForAdmin, isBypass };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

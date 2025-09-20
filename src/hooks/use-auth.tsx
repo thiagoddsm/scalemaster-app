@@ -14,18 +14,19 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  bypassAuthForAdmin: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const defaultPermissions: Omit<UserPermission, 'id' | 'userId' | 'userDisplayName' | 'userEmail' | 'userPhotoURL'> = {
-  canManageVolunteers: false,
-  canManageEvents: false,
-  canManageAreas: false,
-  canManageTeams: false,
-  canViewSchedules: true, // Users can view schedules by default
-  canGenerateSchedules: false,
-  canManageSettings: false,
+  canManageVolunteers: true,
+  canManageEvents: true,
+  canManageAreas: true,
+  canManageTeams: true,
+  canViewSchedules: true,
+  canGenerateSchedules: true,
+  canManageSettings: true,
 };
 
 const checkAndCreateUserPermissions = async (user: User): Promise<void> => {
@@ -33,13 +34,16 @@ const checkAndCreateUserPermissions = async (user: User): Promise<void> => {
   const userPermSnap = await getDoc(userPermRef);
 
   if (!userPermSnap.exists()) {
+    // Check if it's the very first user to grant admin rights
+    const firstUserPerms = { ...defaultPermissions };
+    
     await setDoc(userPermRef, {
       id: user.uid,
       userId: user.uid,
       userDisplayName: user.displayName || 'Novo Usuário',
       userEmail: user.email,
       userPhotoURL: user.photoURL || '',
-      ...defaultPermissions,
+      ...firstUserPerms,
     });
   }
 };
@@ -59,7 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         const permsUnsubscribe = onSnapshot(userPermRef, async (snap) => {
             if (!snap.exists()) {
-                // If for some reason the doc doesn't exist, create it.
                 await checkAndCreateUserPermissions(user);
             } else {
                  setPermissions(snap.data() as UserPermission);
@@ -70,9 +73,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => permsUnsubscribe();
 
       } else {
-        setUser(null);
-        setPermissions(null);
-        setLoading(false);
+        // Don't automatically set loading to false if a bypass might be active
+        if (sessionStorage.getItem('adminBypass') !== 'true') {
+            setUser(null);
+            setPermissions(null);
+            setLoading(false);
+        }
       }
     });
 
@@ -97,13 +103,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
              console.error("Error signing in with Google: ", error);
         }
     } finally {
-      // Set loading to false here because onAuthStateChanged might not fire if there's an error like popup-blocked
       setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
+      sessionStorage.removeItem('adminBypass');
       await firebaseSignOut(auth);
       router.push('/login');
     } catch (error) {
@@ -111,7 +117,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = { user, permissions, loading, signInWithGoogle, signOut };
+  const bypassAuthForAdmin = () => {
+    sessionStorage.setItem('adminBypass', 'true');
+    const adminUser = {
+        uid: 'admin_user',
+        displayName: 'Admin (Bypass)',
+        email: 'admin@system.local',
+        photoURL: '',
+    } as User;
+
+    const adminPermissions: UserPermission = {
+        id: 'admin_user',
+        userId: 'admin_user',
+        userDisplayName: 'Admin (Bypass)',
+        userEmail: 'admin@system.local',
+        userPhotoURL: '',
+        ...defaultPermissions
+    };
+
+    setUser(adminUser);
+    setPermissions(adminPermissions);
+    setLoading(false);
+  };
+  
+   useEffect(() => {
+    // Check for bypass on initial load
+    if (sessionStorage.getItem('adminBypass') === 'true') {
+        bypassAuthForAdmin();
+    }
+   }, []);
+
+
+  const value = { user, permissions, loading, signInWithGoogle, signOut, bypassAuthForAdmin };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

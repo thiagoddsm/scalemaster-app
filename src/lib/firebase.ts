@@ -13,8 +13,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-// This structure is slightly different to force a reload of the config.
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// This new structure is designed to force a cache refresh on the server.
+let app: App;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
 
 const auth = getAuth(app);
 const db = getFirestore(app);

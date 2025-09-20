@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    auth.languageCode = 'pt'; // Set language for the popup
+    auth.languageCode = 'pt';
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);

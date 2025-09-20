@@ -1,14 +1,24 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut as firebaseSignOut, AuthError, getAuth } from 'firebase/auth';
-import { app, db } from '@/lib/firebase';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, User, signOut as firebaseSignOut, AuthError, getAuth, Auth } from 'firebase/auth';
+import { app, db, firebaseConfig } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import type { UserPermission } from '@/lib/types';
 import { toast } from './use-toast';
+import { initializeApp, getApps } from 'firebase/app';
 
-const auth = getAuth(app);
+
+// Initialize a dedicated auth instance to avoid conflicts.
+let auth: Auth;
+if (getApps().length > 0) {
+  auth = getAuth(getApps()[0]);
+} else {
+  const newApp = initializeApp(firebaseConfig);
+  auth = getAuth(newApp);
+}
+
 
 interface AuthContextType {
   user: User | null;

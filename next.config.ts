@@ -24,12 +24,13 @@ const nextConfig: NextConfig = {
   async headers() {
     const csp = `
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' *.cloudworkstations.googleusercontent.com vscode-cdn.net;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google.com *.google-analytics.com *.googletagmanager.com *.cloudworkstations.googleusercontent.com vscode-cdn.net;
       style-src 'self' 'unsafe-inline';
-      img-src 'self' data:;
-      font-src 'self';
-      connect-src 'self';
-      frame-src 'self';
+      img-src 'self' data: blob:;
+      font-src 'self' data:;
+      connect-src 'self' *.google.com *.google-analytics.com *.googleapis.com *.cloudworkstations.googleusercontent.com vscode-cdn.net;
+      frame-src 'self' *.google.com *.cloudworkstations.googleusercontent.com;
+      worker-src 'self' blob:;
     `.replace(/\s{2,}/g, ' ').trim();
 
     return [
